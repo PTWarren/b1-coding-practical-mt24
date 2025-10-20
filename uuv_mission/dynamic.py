@@ -66,6 +66,7 @@ class Trajectory:
 
 @dataclass
 class Mission:
+
     reference: np.ndarray
     cave_height: np.ndarray
     cave_depth: np.ndarray
@@ -78,12 +79,12 @@ class Mission:
     @classmethod
     def from_csv(cls, file_name: str):
         # You are required to implement this method
-       
-       df = pd.read_csv(file_name)
-       references = df.iloc[:,0]
-       cave_heights = df.iloc[:1]
-       cave_depths = df.iloc[:,2]
-       return cls(references,cave_heights,cave_depths)
+        df = pd.read_csv(file_name)
+        # Expect columns: reference, cave_height, cave_depth (or similar)
+        reference = df.iloc[:, 0].to_numpy()
+        cave_heights = df.iloc[:, 1].to_numpy()
+        cave_depths = df.iloc[:, 2].to_numpy()
+        return cls(reference, cave_heights, cave_depths)
         
 
 
@@ -102,11 +103,14 @@ class ClosedLoop:
         actions = np.zeros(T)
         self.plant.reset_state()
 
+        error = np.zeros(T+1)
+        error[0] = 0
         for t in range(T):
             positions[t] = self.plant.get_position()
             observation_t = self.plant.get_depth()
             # Call your controller here
-            control.controller(positions[t], observation_t, 0.15, 0.6)
+            # pass the reference array and the current time index
+            actions[t], error[t+1] = control.controller(mission.reference, observation_t, 0.1, 0.7, t, error[t], dt=1)
             self.plant.transition(actions[t], disturbances[t])
 
         return Trajectory(positions)
