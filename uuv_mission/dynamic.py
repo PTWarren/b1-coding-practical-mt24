@@ -80,7 +80,7 @@ class Mission:
     def from_csv(cls, file_name: str):
         # You are required to implement this method
         df = pd.read_csv(file_name)
-        # Expect columns: reference, cave_height, cave_depth (or similar)
+        # Imports the columns of the dataframe to 1 dimensional numpy arrays
         reference = df.iloc[:, 0].to_numpy()
         cave_heights = df.iloc[:, 1].to_numpy()
         cave_depths = df.iloc[:, 2].to_numpy()
